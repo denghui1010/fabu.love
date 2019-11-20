@@ -138,7 +138,12 @@
           } else {
             this.installWithPwd = false
           }
-
+          // 如果设置了商店地址, 跳转去商店
+          if (this.appBaseData.storeUrl) {
+            const a = document.createElement('a')
+            a.setAttribute('href', this.appBaseData.storeUrl)
+            a.click()
+          }
         }, reject => {
           this.$message.error('服务器错误')
         })
@@ -157,7 +162,7 @@
           let url = `${this.axios.defaults.baseURL}${this.appVersionInfo.downloadUrl}`
           a.setAttribute('href', url)
           a.click()
-          AppResourceApi.downloadedCount(_this.appBaseData._id, _this.appVersionInfo._id).then(() => {
+          AppResourceApi.downloadedCount(this.appBaseData._id, this.appVersionInfo._id).then(() => {
           }, reject => {
 
           })
