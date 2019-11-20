@@ -153,10 +153,10 @@
           a.setAttribute('href', this.appVersionInfo.installUrl)
           a.click()
         } else {
-          const a = document.createElement('a')
+          // const a = document.createElement('a')
           let url = `${this.axios.defaults.baseURL}${this.appVersionInfo.downloadUrl}`
-          a.setAttribute('href', url)
-          a.click()
+          // a.setAttribute('href', url)
+          // a.click()
           let _this = this
           fetch(url).then(response => {
             var reader = response.body.getReader()
