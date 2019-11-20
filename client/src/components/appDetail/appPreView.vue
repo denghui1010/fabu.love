@@ -153,31 +153,35 @@
           a.setAttribute('href', this.appVersionInfo.installUrl)
           a.click()
         } else {
-          // const a = document.createElement('a')
+          const a = document.createElement('a')
           let url = `${this.axios.defaults.baseURL}${this.appVersionInfo.downloadUrl}`
-          // a.setAttribute('href', url)
-          // a.click()
-          let _this = this
-          fetch(url).then(response => {
-            var reader = response.body.getReader()
-            var headers = response.headers
-            var totalLength = headers.get('Content-Length')
-            var bytesReceived = 0
-            reader.read().then(function processResult(result) {
-              if (result.done) {
-                console.log('下载完成')
-                console.log(_this.appBaseData)
-                AppResourceApi.downloadedCount(_this.appBaseData._id, _this.appVersionInfo._id).then(() => {
-                }, reject => {
+          a.setAttribute('href', url)
+          a.click()
+          AppResourceApi.downloadedCount(_this.appBaseData._id, _this.appVersionInfo._id).then(() => {
+          }, reject => {
 
-                })
-                return
-              }
-              bytesReceived += result.value.length
-              console.log(`progress: ${bytesReceived / totalLength * 100}%`)
-              return reader.read().then(processResult)
-            })
           })
+          // let _this = this
+          // fetch(url).then(response => {
+          //   var reader = response.body.getReader()
+          //   var headers = response.headers
+          //   var totalLength = headers.get('Content-Length')
+          //   var bytesReceived = 0
+          //   reader.read().then(function processResult(result) {
+          //     if (result.done) {
+          //       console.log('下载完成')
+          //       console.log(_this.appBaseData)
+          //       AppResourceApi.downloadedCount(_this.appBaseData._id, _this.appVersionInfo._id).then(() => {
+          //       }, reject => {
+
+          //       })
+          //       return
+          //     }
+          //     bytesReceived += result.value.length
+          //     console.log(`progress: ${bytesReceived / totalLength * 100}%`)
+          //     return reader.read().then(processResult)
+          //   })
+          // })
         }
       },
       getContentClass() {
