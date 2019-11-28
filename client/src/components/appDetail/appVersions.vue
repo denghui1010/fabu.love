@@ -76,10 +76,10 @@
           width="200"
         >
           <template slot-scope="scope">
-            <button class="appversion-elButton" @click="releaseApp(scope.row)"><i class="icon-ic_overview"></i></button>
-            <button class="appversion-elButton" @click="clickDownLoad(scope.row)"><i class="icon-ic_download"></i></button>
-            <button class="appversion-elButton" @click="clickEditor(scope.row)"><i class="icon-ic_edit"></i></button>
-            <button class="appversion-elButton" @click="clickDelect(scope.row)"><i class="icon-ic_delete"></i></button>
+            <button class="appversion-elButton" @click="releaseApp(scope.row)" title="发布"><i class="icon-ic_overview"></i></button>
+            <button class="appversion-elButton" @click="clickDownLoad(scope.row)" title="下载"><i class="icon-ic_download"></i></button>
+            <button class="appversion-elButton" @click="clickEditor(scope.row)" title="编辑"><i class="icon-ic_edit"></i></button>
+            <button class="appversion-elButton" @click="clickDelect(scope.row)" title="删除"><i class="icon-ic_delete"></i></button>
           </template>
         </el-table-column>
       </el-table>
@@ -290,7 +290,7 @@
         }
       },
       getVersion(item) {
-        return `${item.versionStr}(${item.versionCode})`
+        return `${item.versionStr} (build${item.versionCode})`
       }
     }
   }
