@@ -23,7 +23,7 @@
             <p class="versiondownload" style="display: inline-block" v-html="getDownLoadCount(this.versionInfo.downloadCount)"></p>/<span style="color: #9B9B9B;display: inline-block" v-html="getAllowDownLoadCount(this.versionInfo.strategy)"></span>
           </el-form-item>
           <el-form-item label="更新安装地址">
-            <input style="width: calc(100% - 40px)" v-model="downloadUrl" class="borderLine-input" type="text">
+            <input style="width: calc(100% - 40px)" v-model="installUrl" class="borderLine-input" type="text">
           </el-form-item>
           <el-form-item label="更新方式">
             <el-radio v-model="updateType" label="normal">普通更新</el-radio>
@@ -67,7 +67,7 @@
         show: false,
         updataContent: '',
         showinDownLoadPage: false,
-        downloadUrl: '',
+        installUrl: '',
         updateType: ''
       }
     },
@@ -75,7 +75,7 @@
       setTimeout(() => {
         console.log(this.versionInfo)
         this.show = true
-        this.downloadUrl = this.versionInfo.installUrl
+        this.installUrl = this.versionInfo.installUrl
         if (this.versionInfo.changelog) {
           this.updataContent = this.versionInfo.changelog
         }
