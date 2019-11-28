@@ -63,6 +63,7 @@
         AppResourceApi.updateAppSetting(getUserTeam()._id, this.appInfo._id, body).then((res) => {
             if (res.success) {
               this.$message.success(res.message)
+              this.$emit('updateSuccess')
             }
         }, reject => {
 

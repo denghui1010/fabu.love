@@ -17,7 +17,8 @@
 
     <appSetting
       v-if="showAppSetting"
-      :appInfo="appInfo">
+      :appInfo="appInfo"
+      @updateSuccess="updateAppInfoSuccess">
     </appSetting>
   </div>
 </template>
