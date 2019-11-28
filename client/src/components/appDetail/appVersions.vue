@@ -171,25 +171,6 @@
         let url = `${this.axios.defaults.baseURL}${item.downloadUrl}`
         a.setAttribute('href', url)
         a.click()
-        fetch(url).then(response => {
-          var reader = response.body.getReader()
-          var headers = response.headers
-          var totalLength = headers.get('Content-Length')
-          var bytesReceived = 0
-          var _this = this
-          reader.read().then(function processResult(result) {
-            if (result.done) {
-              console.log('下载完成')
-              AppResourceApi.downloadedCount(_this.appInfo._id, item._id).then(() => {
-              }, reject => {
-              })
-              return
-            }
-            bytesReceived += result.value.length
-            console.log(`progress: ${bytesReceived / totalLength * 100}%`)
-            return reader.read().then(processResult)
-          })
-        })
       },
       clickEditor(item) {
         this.showEditorVersion = true
