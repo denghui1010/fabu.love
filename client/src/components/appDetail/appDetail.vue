@@ -8,7 +8,7 @@
     </appDetailHeader>
 
     <appVersions
-      v-if="!showAppSettin && appInfo._id"
+      v-if="!showAppSetting && appInfo._id"
       :appInfo="appInfo"
       :subTitleArr="subTitleArr"
       @updateAppInfoSuccess="updateAppInfoSuccess"
