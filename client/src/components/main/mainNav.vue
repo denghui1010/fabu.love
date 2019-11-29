@@ -36,6 +36,10 @@
             <i class="icon-ic_appsetting-copy"></i>
             <span slot="title">应用设置</span>
           </el-menu-item>
+          <el-menu-item index="应用合并" @click="clickSubItem">
+            <i class="icon-ic_appsetting-copy"></i>
+            <span slot="title">应用合并</span>
+          </el-menu-item>
         </div>
         <!--小程序-->
         <div v-show="this.activeIndex === '应用详情'">
@@ -129,6 +133,9 @@
         }
         if (data.index === '应用设置') {
           this.bus.$emit('appSetting')
+        }
+        if (data.index === '应用合并') {
+          this.bus.$emit('appMerge')
         }
         if (data.index === '团队管理') {
           this.$router.push('/members')

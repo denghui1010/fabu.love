@@ -41,7 +41,7 @@ var appSchema = new Schema({
         default: true
     },
     installWithPwd: {
-        Boolean,
+        type: Boolean,
         default: false
     },
     installPwd: {
@@ -76,6 +76,13 @@ var appSchema = new Schema({
             default: 'silent',
             enum: ['silent', 'normal', 'force']
         }
+    },
+    merge: {
+        bundleId: String,
+        shortUrl: String,
+        appName: String,
+        icon: String,
+        storeUrl: String
     }
 })
 

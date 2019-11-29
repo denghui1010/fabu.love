@@ -177,10 +177,10 @@
         this.setupData()
       },
       getCodeStr() {
-        return `${this.currentVersion.versionStr}(${this.currentVersion.versionCode})`
+        return `${this.currentVersion.versionStr} (build${this.currentVersion.versionCode})`
       },
       getListCodeStr(item) {
-        return `${item.versionStr}(${item.versionCode})`
+        return `${item.versionStr} (build${item.versionCode})`
       }
     }
   }
@@ -252,6 +252,7 @@
     top: 0px;
     right: 0px;
     line-height: 24px;
+    margin-right: 10px;
   }
   .graySetting-content .versionlistwrapper {
     position: absolute;
@@ -261,14 +262,15 @@
     max-height: 200px;
     padding-left: 10px;
     box-sizing: border-box;
-    overflow: scroll;
+    overflow: auto;
     border-left: solid 1px #eee;
     border-bottom: solid 1px #eee;
     border-right: solid 1px #eee;
   }
   .graySetting-content .versionlistwrapper .list {
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
+    max-height: 200px;
   }
   .graySetting-content .versionlistwrapper .item {
     height: 24px;
@@ -279,6 +281,9 @@
   }
   .graySetting-content .el-form .el-form-item {
     margin-bottom: 5px;
+  }
+  .graySetting-content .el-form .el-form-item .el-radio {
+    margin-right: 10px;
   }
   .graySetting-content .el-form .el-form-item label {
     font-size: 14px;

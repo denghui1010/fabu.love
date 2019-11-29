@@ -2,7 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import {Button, Dialog, Menu, Input, Switch, Popover, Form, Upload, Progress, Badge, Container, Header, Aside, Main, Footer, Loading, Message, MenuItem, Table, TableColumn, FormItem, Pagination, Radio, MessageBox} from 'element-ui'
+import {Button, Dialog, Menu, Input, Switch, Popover, Form, Upload, Progress, Badge, Container, Header, Aside, Main, Footer, Loading, Message, MenuItem, Table, TableColumn, FormItem, Pagination, Radio, MessageBox, Checkbox} from 'element-ui'
 
 import router from './router'
 import axios from 'axios'
@@ -43,6 +43,7 @@ Vue.use(TableColumn)
 Vue.use(Main)
 Vue.use(Footer)
 Vue.use(MenuItem)
+Vue.use(Checkbox)
 
 Vue.prototype.$prompt = MessageBox.prompt
 Vue.prototype.$loading = Loading.service

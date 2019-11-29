@@ -76,7 +76,7 @@
           return `${this.axios.defaults.baseURL}${item.icon}`
       },
       getShortUrl(item) {
-        return `${this.axios.defaults.baseURL}${item.shortUrl}`
+        return `${item.shortUrl}`
       },
       clickEditorBtn(item) {
         this.$emit('gotoAppDetail', item)
@@ -145,7 +145,6 @@
   .itemWrapper .appItem-icon {
     width: 72px;
     height: 72px;
-    border-radius: 50%;
     margin-top: 24px;
     cursor: pointer;
   }

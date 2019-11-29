@@ -28,16 +28,18 @@
         class="version-table"
       >
         <el-table-column
-          width="60"
-          label=""
+          width="150"
+          label="状态"
           class="version-table-one"
         >
           <template slot-scope="scope">
-            <span :class="getIconClass(scope.row)"></span>
+            <span :class="getIconClass(scope.row).class"></span>
+            <span>{{getIconClass(scope.row).title}}</span>
           </template>
         </el-table-column>
         <el-table-column
           label="版本"
+          width="150"
         >
           <template slot-scope="scope">
             <p v-html="getVersion(scope.row)"></p>
@@ -258,9 +260,9 @@
       getIconClass(item) {
         // 灰度版本
         if (this.appInfo.grayReleaseVersionId && this.appInfo.grayReleaseVersionId === item._id) {
-            return 'version-table-one-gray'
+            return {class: 'version-table-one-gray', title: '灰度发布'}
         } else if (this.appInfo.releaseVersionId && this.appInfo.releaseVersionId === item._id) {
-          return 'version-table-one-lighting'
+          return {class: 'version-table-one-lighting', title: '普通发布'}
         }
       },
       getTodayCount() {

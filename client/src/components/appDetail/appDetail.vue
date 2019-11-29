@@ -8,7 +8,7 @@
     </appDetailHeader>
 
     <appVersions
-      v-if="!showAppSetting && appInfo._id"
+      v-if="tabIndex === 'appSummary' && appInfo._id"
       :appInfo="appInfo"
       :subTitleArr="subTitleArr"
       @updateAppInfoSuccess="updateAppInfoSuccess"
@@ -16,10 +16,17 @@
     </appVersions>
 
     <appSetting
-      v-if="showAppSetting"
+      v-if="tabIndex === 'appSetting'"
       :appInfo="appInfo"
       @updateSuccess="updateAppInfoSuccess">
     </appSetting>
+
+    <appMerge
+      v-if="tabIndex === 'appMerge'"
+      :appInfo="appInfo"
+      @updateSuccess="updateAppInfoSuccess">
+    </appMerge>
+
   </div>
 </template>
 
@@ -29,6 +36,7 @@
   import AppDetailHeader from './appDetailHeader.vue'
   import AppVersions from './appVersions.vue'
   import AppSetting from './appSetting.vue'
+  import AppMerge from './appMerge.vue'
 
   export default {
     data() {
@@ -36,16 +44,17 @@
         subTitleArr: ['', '', ''],
         userteam: {},
         appInfo: {},
-        showAppSetting: false
+        tabIndex: "appSummary"
       }
     },
     components: {
-      AppDetailHeader, AppVersions, AppSetting
+      AppDetailHeader, AppVersions, AppSetting, AppMerge
     },
     computed: {},
     destroyed() {
       this.bus.$off('appSummary')
       this.bus.$off('appSetting')
+      this.bus.$off('appMerge')
     },
     created() {
       this.$nextTick(() => {
@@ -53,10 +62,13 @@
         this.getAppDetailData()
       })
       this.bus.$on('appSummary', () => {
-        this.showAppSetting = false
+        this.tabIndex = 'appSummary'
       })
       this.bus.$on('appSetting', () => {
-        this.showAppSetting = true
+        this.tabIndex = 'appSetting'
+      })
+      this.bus.$on('appMerge', () => {
+        this.tabIndex = 'appMerge'
       })
     },
     methods: {

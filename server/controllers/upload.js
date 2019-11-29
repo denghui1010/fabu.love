@@ -116,8 +116,8 @@ async function parseAppAndInsertToDB(file, user, team) {
     //解析ipa和apk文件
     var info = await parser(filePath);
     var fileName = info.bundleId + "_" + info.versionStr + "_" + info.versionCode
-        //解析icon图标
-    var icon = await extractor(filePath, fileName, team);
+    //解析icon图标
+    var icon = await extractor(info.icon, fileName, team);
 
     //移动文件到对应目录
     var fileRelatePath = path.join(team.id, info.platform)
@@ -305,112 +305,33 @@ function parseApk(filename)  {
                 'versionCode': Number(result.versionCode),
                 'bundleId': result.package,
                 'versionStr': result.versionName,
-                'platform': 'android'
+                'platform': 'android',
+                'icon': result.icon
             }
             resolve(info)
           }).catch(err => {
             console.log('err ----> ', err)
           })
-        // apkParser3(filename, (err, data) => {
-        //     var apkPackage = parseText(data.package)
-        //     console.log(data)
-        //     console.log("----------------")
-        //     console.log(data['application-label'])
-        //     var label = undefined
-        //     data['launchable-activity']
-        //         .split(' ')
-        //         .filter(s => s.length != 0)
-        //         .map(element => { return element.split('=') })
-        //         .forEach(element => {
-        //             if (element && element.length > 2 && element[0] == 'label') {
-        //                 label = element[1]
-        //             }
-        //         })
-        //     if (label) {
-        //         label = label.replace(/'/g, '')
-        //     }
-        //     var appName = (data['application-label'] || data['application-label-zh-CN'] || data['application-label-es-US'] ||
-        //         data['application-label-zh_CN'] || data['application-label-es_US'] || label || 'unknown')
-        //     var info = {
-        //         'appName': appName.replace(/'/g, ''),
-        //         'versionCode': Number(apkPackage.versionCode),
-        //         'bundleId': apkPackage.name,
-        //         'versionStr': apkPackage.versionName,
-        //         'platform': 'android'
-        //     }
-        //     resolve(info)
-        // })
     })
 }
 
 ///解析apk icon
-function extractApkIcon(filepath, guid, team) {
+function extractApkIcon(imgData, guid, team) {
     return new Promise((resolve, reject) => {
-        apkParser3(filepath, (err, data) => {
-            var iconPath = false;
-            var iconSize = [640, 320, 240, 160]
-            for (var i in iconSize) {
-                if (typeof data['application-icon-' + iconSize[i]] !== 'undefined') {
-                    iconPath = data['application-icon-' + iconSize[i]]
-                    break;
-                }
+        var dir = path.join(uploadDir, team.id, "icon")
+        var realPath = path.join(team.id, "icon", '/{0}_a.png'.format(guid))
+        createFolderIfNeeded(dir)
+        var tempOut = path.join(uploadDir, realPath)
+        //过滤data:URL
+        var base64Data = imgData.replace(/^data:image\/\w+;base64,/, "");
+        var dataBuffer = new Buffer(base64Data, 'base64');
+        fs.writeFile(tempOut, dataBuffer, function(err) {
+            if (err) {
+                throw ('save app icon fail');
+            } else {
+                resolve({ 'success': true, fileName: realPath })
             }
-            if (!iconPath) {
-                throw ('can not find app icon')
-            }
-
-            iconPath = iconPath.replace(/'/g, '')
-            var dir = path.join(uploadDir, team.id, "icon")
-            var realPath = path.join(team.id, "icon", '/{0}_a.png'.format(guid))
-            createFolderIfNeeded(dir)
-            var tempOut = path.join(uploadDir, realPath)
-            
-            var { ext, dir } = path.parse(iconPath);
-            // 获取到最大的png的路径
-            let maxSizePath;
-            // if (ext === '.xml') {
-
-            // } else {
-            //     fs.createReadStream(filepath)
-            //         .pipe(unzip.Parse())
-            //         .pipe(etl.map(entry => {
-            //             // 适配iconPath为ic_launcher.xml的情况
-            //             const entryPath = entry.path
-            //             // const isXml = entryPath.indexOf('.xml') >= 0
-            //             // if ( (!isXml && entryPath.indexOf(iconPath) != -1) || (isXml && entry.path.indexOf(maxSizePath) != -1)) {
-            //             //     console.log(entry.path)
-            //             entry.pipe(etl.toFile(tempOut))
-            //             resolve({ 'success': true, fileName: realPath })
-            //             // } else {
-            //             //     entry.autodrain()
-            //             // }
-            //         }))
-            // }
-
-            const initialPromise = ext === '.xml' ?
-                unzip.Open.file(filepath).then(directory => {
-                    const getMaxSizeImagePath = compose(get('path'), maxBy('compressedSize'),
-                        filter(entry => entry.path.indexOf(dir) >= 0 && entry.path.indexOf('.png') >= 0), get('files'));
-                    maxSizePath = getMaxSizeImagePath(directory)
-                }) : new Promise((resolve) => resolve())
-            initialPromise.then(() => {
-                fs.createReadStream(filepath)
-                    .pipe(unzip.Parse())
-                    .pipe(etl.map(entry => {
-                        // 适配iconPath为ic_launcher.xml的情况
-                        const entryPath = entry.path
-                        const isXml = entryPath.indexOf('.xml') >= 0
-                        if ( (!isXml && entryPath.indexOf(iconPath) != -1) || (isXml && entry.path.indexOf(maxSizePath) != -1)) {
-                            console.log(entry.path)
-                            entry.pipe(etl.toFile(tempOut))
-                            resolve({ 'success': true, fileName: realPath })
-                        } else {
-                            resolve({ 'success': true, fileName: realPath })
-                            entry.autodrain()
-                        }
-                    }))
-            })
-        })
+        });
     })
 }
 

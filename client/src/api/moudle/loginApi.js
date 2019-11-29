@@ -16,7 +16,7 @@ export function login(body) {
 }
 
 
-// 登录
+// 重置密码
 export function resetPassword(body) {
   let url = 'api/user/resetPassword'
   return postHttp(url, body)
