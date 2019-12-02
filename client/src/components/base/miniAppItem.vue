@@ -129,8 +129,8 @@
   .itemWrapper .appItem-icon {
     width: 72px;
     height: 72px;
-    border-radius: 50%;
     margin-top: 24px;
+    object-fit: contain;
     cursor: pointer;
   }
   .itemWrapper .appItem-info {
