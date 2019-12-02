@@ -3,7 +3,7 @@
     <ul class="collectionView-wrapper-ul">
       <li v-for="(item, index) in this.dataArr" :key="index" class="itemWrapper">
         <span :class="item.platform === 'ios' ? 'appItem-platform-ios':'appItem-platform-android'" class="appItem-platform"></span>
-        <img class="appItem-icon" v-if="item.icon" :src="getIcon(item)" @click="gotoAppDetail(item)">
+        <img class="appItem-icon" v-if="item.icon" v-lazy="{src: getIcon(item), error: require('../../assets/app_icon.png'), loading: require('../../assets/app_icon.png')}" @click="gotoAppDetail(item)">
 
         <div class="appItem-info">
           <div class="appItem-info-namewrapper">
@@ -146,6 +146,7 @@
     width: 72px;
     height: 72px;
     margin-top: 24px;
+    object-fit: contain;
     cursor: pointer;
   }
   .itemWrapper .appItem-info {

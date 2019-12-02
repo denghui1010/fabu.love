@@ -6,17 +6,29 @@
         <div class="content">
             <div class="approw">
                 <div class="app">
-                    <img class="appicon" v-lazy="this.axios.defaults.baseURL+appInfo.icon" />
-                    <div>{{appInfo.appName}}</div>
-                    <div class="platform">{{appInfo.platform}}</div>
+                    <img
+                        class="appicon"
+                        v-lazy="{src: axios.defaults.baseURL+appInfo.icon, error: require('../../assets/app_icon.png'), loading: require('../../assets/app_icon.png')}"
+                    />
+                    <div>
+                        <i :class="appInfo.platform === 'ios' ? 'icon-ic_ios':'icon-ic_andr'"></i>
+                        {{appInfo.appName}}
+                    </div>
+                    <!-- <div>{{appInfo.platform}}</div> -->
                 </div>
                 <div>
                     <img class="link" src="../../assets/app_link.png" />
                 </div>
                 <div class="app" v-if="isMergedApp">
-                    <img class="appicon" v-lazy="axios.defaults.baseURL+appInfo.icon" />
-                    <div>{{rightApp.appName}}</div>
-                    <div>{{rightApp.platform}}</div>
+                    <img
+                        class="appicon"
+                        v-lazy="{src: axios.defaults.baseURL+rightApp.icon, error: require('../../assets/app_icon.png'), loading: require('../../assets/app_icon.png')}"
+                    />
+                    <div>
+                        <i :class="rightApp.platform === 'ios' ? 'icon-ic_ios':'icon-ic_andr'"></i>
+                        {{rightApp.appName}}
+                    </div>
+                    <!-- <div>{{rightApp.platform}}</div> -->
                 </div>
                 <div class="app" v-else-if="isMergedUrl">
                     <div class="appurl">{{rightApp.storeUrl}}</div>
@@ -43,8 +55,14 @@
                         :class="{'choose-item':true, 'choose-item--checked':chooseIndex === index}"
                         @click="onChooseItemClick(index)"
                     >
-                        <img class="item-appicon" v-lazy="axios.defaults.baseURL+item.icon" />
-                        <div>{{item.appName}}</div>
+                        <img
+                            class="item-appicon"
+                            v-lazy="{src: axios.defaults.baseURL+item.icon, error: require('../../assets/app_icon.png'), loading: require('../../assets/app_icon.png')}"
+                        />
+                        <div>
+                            <i :class="item.platform === 'ios' ? 'icon-ic_ios':'icon-ic_andr'"></i>
+                            {{item.appName}}
+                        </div>
                         <el-checkbox
                             class="item-check"
                             v-if="chooseIndex === index"
@@ -104,15 +122,11 @@ export default {
         loadAppList() {
             AppResourceApi.getAppList(this.currentTeam._id).then(
                 response => {
-                    this.dataList = [];
-                    this.dataList = response.data.reverse();
-                    this.originDataList = this.dataList;
-                    if (this.dataList.length === 0) {
-                        this.showEmpty = true;
-                    } else {
-                        this.showEmpty = false;
-                    }
-                    console.log(this.dataList);
+                    let dataList = response.data || [];
+                    dataList = dataList.filter(item => {
+                        return item.platform !== this.appInfo.platform;
+                    });
+                    this.dataList = dataList.reverse();
                 },
                 reject => {
                     this.$message.error(reject);
@@ -121,19 +135,24 @@ export default {
             );
         },
         onUnmergeClick() {
-            AppResourceApi.updateAppSetting(
-                this.currentTeam._id,
-                this.appInfo._id,
-                { merge: {} }
-            ).then(
-                res => {
-                    if (res.success) {
-                        this.$message.success(res.message);
+            Promise.all([
+                this.updateAppSetting(this.currentTeam._id, this.appInfo._id, {
+                    merge: {}
+                }),
+                this.updateAppSetting(
+                    this.currentTeam._id,
+                    this.appInfo.merge._id,
+                    { merge: {} }
+                )
+            ]).then(
+                ([res1, res2]) => {
+                    if (res1.success && res2.success) {
+                        this.$message.success(res1.message);
                         this.$emit("updateSuccess");
                     }
                 },
                 reject => {
-                    this.$message.error("失败");
+                    this.$message.error(reject);
                 }
             );
         },
@@ -144,42 +163,78 @@ export default {
         onChooseItemClick(index) {
             this.chooseIndex = index;
         },
-        onChooseConfirmClick() {
-            let body = {
-                bundleId: "",
-                shortUrl: "",
-                appName: "",
-                icon: "",
-                storeUrl: ""
-            };
+        async onChooseConfirmClick() {
+            let body = {};
+            let _id = undefined;
             if (this.chooseType === "内部应用") {
                 const app = this.dataList[this.chooseIndex];
                 body.bundleId = app.bundleId;
-                body.shortUrl = app.storeUrl;
+                body.shortUrl = app.shortUrl;
                 body.appName = app.appName;
                 body.icon = app.icon;
-            } else if (this.chooseType === "内部链接") {
+                body.platform = app.platform;
+                body._id = app._id;
+                _id = app._id;
+            } else if (this.chooseType === "内部短链") {
                 //根据短链查询app信息
+                try {
+                    await AppResourceApi.getAppInfoByShortUrl(
+                        this.shortLink
+                    ).then(res => {
+                        console.log("getAppInfoByShortUrl", res);
+                        const app = res.data.app;
+                        body.bundleId = app.bundleId;
+                        body.shortUrl = app.shortUrl;
+                        body.appName = app.appName;
+                        body.icon = app.icon;
+                        body.platform = app.platform;
+                        body._id = app._id;
+                        _id = app._id;
+                    });
+                } catch (err) {
+                    this.$message.error(err);
+                    return;
+                }
             } else if (this.chooseType === "外部链接") {
                 body.storeUrl = this.storeLink;
+            } else {
+                return;
             }
-            AppResourceApi.updateAppSetting(
-                this.currentTeam._id,
-                this.appInfo._id,
-                { merge: body }
-            ).then(
-                res => {
-                    if (res.success) {
-                        this.$message.success(res.message);
+            Promise.all([
+                this.updateAppSetting(
+                    this.currentTeam._id,
+                    this.appInfo._id,
+                    body
+                ),
+                this.updateAppSetting(this.currentTeam._id, _id, undefined)
+            ]).then(
+                ([res1, res2]) => {
+                    if (res1.success && res2.success) {
+                        this.$message.success(res1.message);
                         this.$emit("updateSuccess");
                     }
+                    this.dialogVisible = false;
                 },
                 reject => {
-                    this.$message.error("失败");
+                    this.$message.error(reject);
                 }
             );
-            // 调接口
-            this.dialogVisible = false;
+        },
+        updateAppSetting(teamId, appId, merge) {
+            if (!appId) {
+                return Promise.resolve({ success: true });
+            }
+            if (!merge) {
+                merge = {};
+                const app = this.appInfo;
+                merge.bundleId = app.bundleId;
+                merge.shortUrl = app.shortUrl;
+                merge.appName = app.appName;
+                merge.icon = app.icon;
+                merge.platform = app.platform;
+                merge._id = app._id;
+            }
+            return AppResourceApi.updateAppSetting(teamId, appId, { merge });
         }
     }
 };
@@ -219,6 +274,10 @@ export default {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+
+                i {
+                    margin-right: 2px;
+                }
 
                 .appicon {
                     width: 120px;
@@ -280,6 +339,10 @@ export default {
 
                 &--checked {
                     background: rgba($color: $mainColor, $alpha: 0.1);
+                }
+
+                i {
+                    margin-right: 2px;
                 }
 
                 .item-appicon {

@@ -82,7 +82,9 @@ var appSchema = new Schema({
         shortUrl: String,
         appName: String,
         icon: String,
-        storeUrl: String
+        storeUrl: String,
+        platform: String,
+        _id: String
     }
 })
 

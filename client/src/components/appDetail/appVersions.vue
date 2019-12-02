@@ -263,6 +263,8 @@
             return {class: 'version-table-one-gray', title: '灰度发布'}
         } else if (this.appInfo.releaseVersionId && this.appInfo.releaseVersionId === item._id) {
           return {class: 'version-table-one-lighting', title: '普通发布'}
+        } else {
+          return {}
         }
       },
       getTodayCount() {

@@ -2,7 +2,7 @@
     <div>
       <div class="detail-header">
         <div class="detail-header-top">
-          <img class="appicon" v-lazy="getIconUrl()">
+          <img class="appicon" v-lazy="{src: getIconUrl(), error: require('../../assets/app_icon.png'), loading: require('../../assets/app_icon.png')}">
           <p class="appname">{{this.appInfo.appName}}</p>
           <div class="appType-platform-wrapper">
             <div class="appType" v-show="this.appInfo.appLevel" v-html="getAppType()"></div>
