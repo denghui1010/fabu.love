@@ -543,7 +543,7 @@ module.exports = class AppRouter {
         await App.updateOne({ _id: appid }, {
             totalDownloadCount: appTotalCount,
             todayDownloadCount: {
-                count: app.totalDownloadCount + 1,
+                count: todayCount,
                 date: nowDate
             }
         })
