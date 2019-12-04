@@ -534,7 +534,7 @@ module.exports = class AppRouter {
         var todayCount = 1;
         var nowDate = new Date()
         if (app.todayDownloadCount.date.toDateString() == nowDate.toDateString()) {
-            todayCount = app.todayDownloadCount + 1
+            todayCount = app.todayDownloadCount.count + 1
         }
         var appTotalCount = 1;
         if (app.totalDownloadCount) {
