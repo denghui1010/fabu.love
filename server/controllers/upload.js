@@ -80,7 +80,8 @@ module.exports = class UploadRouter {
         if (result.app.autoPublish) {
             await App.updateOne({ _id: result.app._id }, {
                 releaseVersionId: result.version._id,
-                releaseVersionCode: result.version.versionCode
+                releaseVersionCode: result.version.versionCode,
+                currentVersion: result.version.versionCode
             })
         }
         console.log(result.app.autoPublish)
@@ -102,13 +103,11 @@ module.exports = class UploadRouter {
 
 async function parseAppAndInsertToDB(file, user, team) {
     var filePath = file.path
-    var parser, extractor;
+    var parser;
     if (path.extname(filePath) === ".ipa") {
         parser = parseIpa
-        extractor = extractIpaIcon
     } else if (path.extname(filePath) === ".apk") {
         parser = parseApk
-        extractor = extractApkIcon
     } else {
         throw (new Error("文件类型有误,仅支持IPA或者APK文件的上传."))
     }
@@ -117,7 +116,7 @@ async function parseAppAndInsertToDB(file, user, team) {
     var info = await parser(filePath);
     var fileName = info.bundleId + "_" + info.versionStr + "_" + info.versionCode
     //解析icon图标
-    var icon = await extractor(info.icon, fileName, team);
+    var iconRet = await copyApkIcon(info.icon, fileName, team);
 
     //移动文件到对应目录
     var fileRelatePath = path.join(team.id, info.platform)
@@ -130,7 +129,7 @@ async function parseAppAndInsertToDB(file, user, team) {
     if (!app) {
         info.creator = user.username;
         info.creatorId = user._id;
-        info.icon = path.join(uploadPrefix, icon.fileName);
+        info.icon = path.join(uploadPrefix, iconRet.fileName);
         info.shortUrl = Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5);
         app = new App(info)
         app.ownerId = team._id;
@@ -204,6 +203,7 @@ function parseIpa(filename) {
             info.versionStr = result.CFBundleShortVersionString
             info.versionCode = result.CFBundleVersion
             info.iconName = result.CFBundleIcons.CFBundlePrimaryIcon.CFBundleIconName
+            info.icon = result.icon;
             try {
                 const environment = result.mobileProvision.Entitlements['aps-environment']
                 const active = result.mobileProvision.Entitlements['beta-reports-active']
@@ -222,67 +222,10 @@ function parseIpa(filename) {
     })
 }
 
-///解析ipa icon
-async function extractIpaIcon(filename, guid, team) {
-    var ipaInfo = await parseIpa(filename)
-    var iconName = ipaInfo.iconName || 'AppIcon';
-    var tmpOut = tempDir + '/{0}.png'.format(guid)
-    var found = false
-    var buffer = fs.readFileSync(filename)
-    var data = await unzip.Open.buffer(buffer)
-    await new Promise((resolve, reject) => {
-        data.files.forEach(file => {
-            if (file.path.indexOf(iconName + '60x60@2x.png') != -1) {
-                found = true
-                file.stream()
-                    .pipe(fs.createWriteStream(tmpOut))
-                    .on('error', reject)
-                    .on('finish', resolve)
-            }
-        })
-    }).catch({
-        
-    })
-
-    if (!found) {
-        throw (new Error('can not find icon'))
-    }
-
-    var pnfdefryDir = path.join(__dirname, '..', 'library/pngdefry')
-        //写入成功判断icon是否是被苹果破坏过的图片
-    var exeName = '';
-    if (os.type() === 'Darwin') {
-        exeName = 'pngfy-osx';
-    } else if (os.type() === 'Linux') {
-        exeName = 'pngfy-linux';
-    } else {
-        throw new Error('Unknown OS!');
-    }
-
-    var { stderr, stdout } = await exec(path.join(pnfdefryDir, exeName + ' -s _tmp ', tmpOut));
-    if (stderr) {
-        throw stderr;
-    }
-    //执行pngdefry -s xxxx.png 如果结果显示"not an -iphone crushed PNG file"表示改png不需要修复
-    var iconRelatePath = path.join(team.id, "/icon")
-    var iconSuffix = "/" + guid + "_i.png"
-    createFolderIfNeeded(path.join(uploadDir, iconRelatePath))
-    if (stdout.indexOf('not an -iphone crushed PNG file') != -1) {
-        await fs.renameSync(tmpOut, path.join(uploadDir,iconRelatePath, iconSuffix))
-        return { 'success': true, 'fileName': iconRelatePath + iconSuffix }
-    }
-    await fs.unlinkSync(tmpOut)
-    fs.renameSync(tempDir + '/{0}_tmp.png'.format(guid), path.join(uploadDir, iconRelatePath, iconSuffix))
-    return { 'success': true, 'fileName': iconRelatePath + iconSuffix }
-
-}
 
 ///解析apk
 function parseApk(filename)  {
-
     const parser = new AppInfoParser(filename)
-
-
     return new Promise((resolve, reject) => {
         parser.parse().then(result => {
             // console.log('app info ----> ', result)
@@ -315,8 +258,8 @@ function parseApk(filename)  {
     })
 }
 
-///解析apk icon
-function extractApkIcon(imgData, guid, team) {
+///copy icon
+function copyApkIcon(imgData, guid, team) {
     return new Promise((resolve, reject) => {
         var dir = path.join(uploadDir, team.id, "icon")
         var realPath = path.join(team.id, "icon", '/{0}_a.png'.format(guid))

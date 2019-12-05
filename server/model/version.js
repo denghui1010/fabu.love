@@ -27,6 +27,7 @@ var versionSchema = new Schema({
     changelog: String,
     hidden: { type: Boolean, default: false },
     updateMode: { type: String, default: 'normal', enum: ['silent', 'normal', 'force'] },
+    qiniu: String
 });
 
 module.exports = mongoose.model('Version', versionSchema);

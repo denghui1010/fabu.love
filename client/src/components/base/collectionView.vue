@@ -19,13 +19,13 @@
             <tr>
               <td class="appItem-info-title">PackageName:</td>
               <td>
-                <div class="appItem-info-appInfo nowrap">{{item.bundleId}}</div>
+                <div class="appItem-info-appInfo nowrap" :title="item.bundleId">{{item.bundleId}}</div>
               </td>
             </tr>
             <tr>
               <td class="appItem-info-title">当前版本:</td>
               <td>
-                <div class="appItem-info-appInfo nowrap" v-html="item.currentVersion"></div>
+                <div class="appItem-info-appInfo nowrap" v-html="'build'+item.currentVersion"></div>
               </td>
             </tr>
         </table>

@@ -16,6 +16,9 @@ import fpath from 'path';
 import mustache from 'mustache';
 import _ from 'lodash'
 
+var opath = require('path')
+var qiniu = require('qiniu')
+
 const App = require('../model/app_model')
 const Version = require('../model/version')
 const Team = require('../model/team')
@@ -323,7 +326,8 @@ module.exports = class AppRouter {
         if (body.release) {
             await App.updateOne({ _id: app.id }, {
                 releaseVersionId: version._id,
-                releaseVersionCode: version.versionCode
+                releaseVersionCode: version.versionCode,
+                currentVersion: version.versionCode
             })
         } else {
             await App.updateOne({ _id: app.id }, {
@@ -557,7 +561,74 @@ module.exports = class AppRouter {
         ctx.body = responseWrapper(true, '下载次数已更新')
     }
 
+    @request('post', '/api/apps/{teamId}/{id}/qiniu')
+    @summary("使用或取消使用七牛加速")
+    @tag
+    @path({ teamId: { type: 'string', require: true }, id: { type: 'string', require: true } })
+    @body({
+        versionId: { type: 'string', require: true },
+        versionCode: { type: 'string', require: true },
+        enable: { type: 'bool', require: true }
+    })
+    static async enableQiniu(ctx, next) {
+        var user = ctx.state.user.data
+        var { body } = ctx.request
+        var { teamId, id } = ctx.validatedParams;
 
+        var app = await appInTeamAndUserIsManager(id, teamId, user._id)
+        if (!app) {
+            throw new Error("应用不存在或您没有权限执行该操作")
+        }
+        var version = await Version.findById(body.versionId)
+        if (!version) {
+            throw new Error("版本不存在")
+        }
+        if (body.enable) {
+            // 上传至七牛
+            var filePath = opath.join(config.fileDir, version.downloadUrl)
+            await qiniuUpload(filePath, version.downloadUrl);
+
+            await Version.updateOne({ _id: version._id }, {
+                qiniu: "http://package.liudh.cn/"
+            })
+        } else {
+            // 从七牛删除
+            await Version.updateOne({ _id: version._id}, {
+                qiuniu: ""
+            })
+        }
+        ctx.body = responseWrapper(true, body.enable ? "已开启七牛云加速" : "已关闭七牛云加速")
+    }
+
+
+}
+
+function qiniuUpload(filePath, name) {
+    return new Promise((resolve, reject)=>{
+        var accessKey = 'kMLEZmf6coq8E6KjWYw2nc1kTDkq9zm3USS5BaYk';
+        var secretKey = 'ZMhY3dBhymH0RqztVdENhp09fnm31O-A_7Xbp2q1';
+        var mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+        var options = {scope: "fabu"};
+        var putPolicy = new qiniu.rs.PutPolicy(options);
+        var uploadToken = putPolicy.uploadToken(mac);
+        var config = new qiniu.conf.Config();
+        // 空间对应的机房
+        config.zone = qiniu.zone.Zone_z1;
+        var formUploader = new qiniu.form_up.FormUploader(config);
+        var putExtra = new qiniu.form_up.PutExtra();
+        var key = name;
+        // 文件上传
+        formUploader.putFile(uploadToken, key, filePath, putExtra, (respErr, respBody, respInfo)=> {
+            if (respErr) {
+                reject(respErr);
+            }
+            if (respInfo.statusCode == 200) {
+                resolve(respBody);
+            } else {
+                reject(respBody);
+            }
+        });
+    })
 }
 
 async function appInTeamAndUserIsManager(appId, teamId, userId) {

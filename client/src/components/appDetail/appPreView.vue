@@ -204,6 +204,9 @@ export default {
             } else {
                 const a = document.createElement("a");
                 let url = `${this.axios.defaults.baseURL}${this.appVersionInfo.downloadUrl}`;
+                if (this.appVersionInfo.qiniu) {
+                    url = `${this.appVersionInfo.qiniu}${this.appVersionInfo.downloadUrl}`;
+                }
                 a.setAttribute("href", url);
                 a.click();
                 AppResourceApi.downloadedCount(

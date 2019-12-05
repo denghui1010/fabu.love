@@ -78,6 +78,7 @@
           width="200"
         >
           <template slot-scope="scope">
+            <button class="appversion-elButton" @click="qiniu(scope.row)" title="七牛"><i class="icon-ic_overview"></i></button>
             <button class="appversion-elButton" @click="releaseApp(scope.row)" title="发布"><i class="icon-ic_overview"></i></button>
             <button class="appversion-elButton" @click="clickDownLoad(scope.row)" title="下载"><i class="icon-ic_download"></i></button>
             <button class="appversion-elButton" @click="clickEditor(scope.row)" title="编辑"><i class="icon-ic_edit"></i></button>
@@ -207,6 +208,15 @@
 
           this.appInfo.releaseVersionId = item._id
 
+          this.getAppVersionListData()
+        }, reject => {
+
+        })
+      },
+      // 七牛
+      qiniu(item) {
+        AppResourceApi.qiniu(this.userteam._id, this.appInfo._id, item._id, item.versionCode, true).then((res) => {
+          this.$message.success(res.message)
           this.getAppVersionListData()
         }, reject => {
 
