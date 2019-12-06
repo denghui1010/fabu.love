@@ -215,7 +215,11 @@
       },
       // 七牛
       qiniu(item) {
-        AppResourceApi.qiniu(this.userteam._id, this.appInfo._id, item._id, item.versionCode, true).then((res) => {
+        if (item.qiniu.status === 1) {
+          return;
+        }
+        const enable = item.qiniu.status === 2 ? false: true;
+        AppResourceApi.qiniu(this.userteam._id, this.appInfo._id, item._id, item.versionCode, enable).then((res) => {
           this.$message.success(res.message)
           this.getAppVersionListData()
         }, reject => {

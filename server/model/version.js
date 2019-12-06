@@ -27,7 +27,10 @@ var versionSchema = new Schema({
     changelog: String,
     hidden: { type: Boolean, default: false },
     updateMode: { type: String, default: 'normal', enum: ['silent', 'normal', 'force'] },
-    qiniu: String
+    qiniu: {
+        status: { type: Number, default: 0 }, // 0: 不开启 1:处理中 2:上传成功可使用 
+        host: String
+    }
 });
 
 module.exports = mongoose.model('Version', versionSchema);

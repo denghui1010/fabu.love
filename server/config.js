@@ -26,6 +26,11 @@ const common = {
     ldapUserDn: process.env.FABU_LDAP_USERDN || "", //ldap管理员dn 也就是管理员用户名
     ldapBindCredentials: process.env.FABU_LDAP_CREDENTIALS || "", //ldap管理员密码
     ldapBase: process.env.FABU_LDAP_BASE || "", //ldap base
+
+    qiniuHost: "http://package.liudh.cn/", //七牛云加速地址
+    qiniuAccessKey: "kMLEZmf6coq8E6KjWYw2nc1kTDkq9zm3USS5BaYk", //七牛云accessKey
+    qiniuSecretKey: "ZMhY3dBhymH0RqztVdENhp09fnm31O-A_7Xbp2q1", //七牛云secretKey
+    qiniuBucket: "fabu", //七牛云空间名
 };
 
 function boolConfig(str) {
